@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>Análise Facial</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════════════════
+   CSS VARIABLES — exatas do index.css original
+═══════════════════════════════════════════════════ */
+:root {
+  --background:    hsl(30,20%,98%);
+  --foreground:    hsl(20,20%,10%);
+  --card:          hsl(30,20%,99%);
+  --card-fg:       hsl(20,20%,10%);
+  --primary:       hsl(350,30%,45%);
+  --primary-fg:    hsl(0,0%,100%);
+  --secondary:     hsl(30,15%,93%);
+  --secondary-fg:  hsl(20,20%,15%);
+  --muted:         hsl(30,10%,94%);
+  --muted-fg:      hsl(20,10%,45%);
+  --accent:        hsl(20,25%,90%);
+  --accent-fg:     hsl(20,20%,15%);
+  --border:        hsl(30,15%,90%);
+  --radius:        0.75rem;
+  /* skin tones — do tailwind.config */
+  --skin-1: #FDEBD0;
+  --skin-2: #F5CBA7;
+  --skin-3: #E0B88A;
+  --skin-4: #C49A6C;
+  --skin-5: #8D6E4C;
+  --skin-6: #4A3728;
+}
+
+/* ═══════════════════════════════════════════════════
+   RESET
+═══════════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-tap-highlight-color:transparent;scroll-behavior:smooth}
+body{
+  font-family:'Inter',sans-serif;font-size:14px;font-weight:400;
+  background:var(--background);color:var(--foreground);
+  min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+
+/* ═══════════════════════════════════════════════════
+   HEADER — fiel ao AppLayout
+═══════════════════════════════════════════════════ */
+header{
+  position:fixed;top:0;left:0;right:0;z-index:40;
+  background:hsla(30,20%,98%,.95);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);height:56px;
+}
+.header-inner{
+  max-width:512px;margin:0 auto;padding:0 20px;
+  height:100%;display:flex;align-items:center;justify-content:space-between;
+}
+.logo-link{display:flex;align-items:center;gap:10px}
+.logo-box{
+  width:32px;height:32px;border-radius:8px;
+  background:var(--primary);display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;overflow:hidden;
+}
+.logo-box span{color:#fff;font-size:11px;font-weight:700}
+.logo-box img{width:100%;height:100%;object-fit:cover;border-radius:8px}
+.logo-label{
+  font-family:'Playfair Display',serif;font-weight:600;
+  font-size:16px;color:var(--foreground);
+}
+.menu-btn{
+  padding:8px;border-radius:8px;
+  transition:background .15s;color:var(--foreground);
+  display:flex;align-items:center;justify-content:center;
+}
+.menu-btn:hover{background:var(--muted)}
+.menu-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+
+/* ═══════════════════════════════════════════════════
+   DRAWER — fiel ao AppLayout
+═══════════════════════════════════════════════════ */
+.overlay{
+  position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.5);
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
+.overlay.open{opacity:1;pointer-events:all}
+.drawer{
+  position:fixed;top:0;right:0;bottom:0;z-index:50;
+  width:288px;background:var(--card);
+  border-left:1px solid var(--border);box-shadow:0 25px 50px rgba(0,0,0,.15);
+  display:flex;flex-direction:column;
+  transform:translateX(100%);
+  transition:transform .3s cubic-bezier(.4,0,.2,1);
+}
+.drawer.open{transform:translateX(0)}
+.drawer-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px;border-bottom:1px solid var(--border);
+}
+.drawer-title{font-family:'Playfair Display',serif;font-weight:600;font-size:18px}
+.drawer-close{
+  padding:8px;border-radius:8px;transition:background .15s;
+  display:flex;align-items:center;
+}
+.drawer-close:hover{background:var(--muted)}
+.drawer-close svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+.drawer-nav{padding:16px;flex:1}
+.nav-link{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px;border-radius:12px;
+  transition:all .15s;width:100%;text-align:left;
+  font-size:14px;font-weight:500;color:var(--foreground);
+  margin-bottom:4px;
+}
+.nav-link:hover{background:var(--muted)}
+.nav-link.active{background:var(--primary);color:#fff}
+.nav-link svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.drawer-foot{padding:20px;border-top:1px solid var(--border);text-align:center;font-size:12px;color:var(--muted-fg)}
+
+/* ═══════════════════════════════════════════════════
+   PAGES
+═══════════════════════════════════════════════════ */
+.page{display:none;padding-top:56px;min-height:100vh}
+.page.active{display:block}
+.page-inner{max-width:512px;margin:0 auto;padding:32px 20px}
+
+/* ═══════════════════════════════════════════════════
+   SHARED COMPONENTS
+═══════════════════════════════════════════════════ */
+.badge-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 16px;border-radius:9999px;
+  background:hsl(350,30%,45%,.1);color:var(--primary);
+  font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;
+}
+.card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);
+}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:10px 16px;border-radius:var(--radius);
+  font-size:14px;font-weight:500;transition:all .15s;cursor:pointer;
+}
+.btn-primary-full{
+  width:100%;background:var(--primary);color:#fff;
+  border:none;padding:12px;border-radius:var(--radius);
+  font-size:14px;font-weight:500;transition:all .15s;
+}
+.btn-primary-full:hover{background:hsl(350,30%,40%)}
+.btn-primary-full:active{transform:scale(.98)}
+.btn-outline{
+  width:100%;background:transparent;color:var(--foreground);
+  border:1px solid var(--border);padding:12px;border-radius:var(--radius);
+  font-size:14px;font-weight:500;transition:all .15s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn-outline:hover{background:var(--muted)}
+.section-title{
+  font-family:'Playfair Display',serif;
+  font-size:20px;font-weight:600;color:var(--foreground);
+}
+
+/* ═══════════════════════════════════════════════════
+   PAGE HOME — STEP: SELECT
+═══════════════════════════════════════════════════ */
+.home-hero{text-align:center;margin-bottom:32px}
+.home-hero h1{
+  font-family:'Playfair Display',serif;font-size:36px;font-weight:700;
+  color:var(--foreground);line-height:1.2;margin-top:20px;
+}
+.home-hero p{
+  margin-top:12px;font-size:15px;color:var(--muted-fg);
+  max-width:340px;margin-left:auto;margin-right:auto;line-height:1.6;
+}
+
+/* Skin type cards — lista coluna 1, igual ao original */
+.skin-list{display:flex;flex-direction:column;gap:12px}
+.skin-card{
+  position:relative;width:100%;text-align:left;
+  border-radius:16px;border:2px solid transparent;
+  background:hsl(30,20%,99%,.6);
+  padding:20px;transition:all .25s;cursor:pointer;
+  display:flex;align-items:flex-start;gap:16px;
+}
+.skin-card:hover{
+  background:var(--card);border-color:var(--border);
+  box-shadow:0 8px 24px hsl(350,30%,45%,.07);
+  transform:translateY(-3px);
+}
+.skin-card.selected{
+  border-color:var(--primary);background:var(--card);
+  box-shadow:0 12px 32px hsl(350,30%,45%,.12);
+}
+.skin-card-swatch{
+  width:56px;height:56px;border-radius:12px;flex-shrink:0;
+  border:1px solid rgba(0,0,0,.06);box-shadow:inset 0 2px 4px rgba(0,0,0,.08);
+}
+.sw1{background:var(--skin-1)}.sw2{background:var(--skin-2)}.sw3{background:var(--skin-3)}
+.sw4{background:var(--skin-4)}.sw5{background:var(--skin-5)}.sw6{background:var(--skin-6)}
+.skin-card-body{flex:1;min-width:0}
+.skin-card-roman{font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--muted-fg);margin-bottom:4px}
+.skin-card-name{font-size:15px;font-weight:600;color:var(--foreground);margin-bottom:6px;line-height:1.2}
+.skin-card-desc{font-size:13px;color:var(--muted-fg);line-height:1.55}
+.skin-card-check{
+  position:absolute;top:12px;right:12px;
+  width:24px;height:24px;border-radius:50%;
+  background:var(--primary);display:flex;align-items:center;justify-content:center;
+  opacity:0;transform:scale(.4);
+  transition:all .25s cubic-bezier(.34,1.56,.64,1);
+}
+.skin-card.selected .skin-card-check{opacity:1;transform:scale(1)}
+.skin-card-check svg{width:13px;height:13px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.home-footer-note{text-align:center;font-size:12px;color:var(--muted-fg);margin-top:32px;line-height:1.6;padding:0 16px}
+
+/* stagger animation */
+.skin-card{animation:fadeUp .5s ease both}
+.skin-card:nth-child(1){animation-delay:.0s}
+.skin-card:nth-child(2){animation-delay:.08s}
+.skin-card:nth-child(3){animation-delay:.16s}
+.skin-card:nth-child(4){animation-delay:.24s}
+.skin-card:nth-child(5){animation-delay:.32s}
+.skin-card:nth-child(6){animation-delay:.40s}
+
+/* ═══════════════════════════════════════════════════
+   STEP: CAMERA
+═══════════════════════════════════════════════════ */
+.back-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:14px;color:var(--muted-fg);transition:color .15s;
+  margin-bottom:24px;background:none;border:none;cursor:pointer;padding:0;
+}
+.back-btn:hover{color:var(--foreground)}
+.back-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.cam-header{text-align:center;margin-bottom:24px}
+.cam-header .eyebrow{font-size:12px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--primary)}
+.cam-header h2{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--foreground);margin-top:4px}
+.cam-header p{font-size:13px;color:var(--muted-fg);margin-top:4px}
+
+.cam-hint{text-align:center;font-size:13px;color:var(--muted-fg);margin-bottom:16px}
+.cam-viewport{
+  position:relative;border-radius:16px;overflow:hidden;
+  background:#000;aspect-ratio:1/1;
+  max-width:380px;margin:0 auto;
+  box-shadow:0 20px 60px rgba(0,0,0,.3);
+}
+#videoEl,#snapCanvas{
+  width:100%;height:100%;object-fit:cover;
+  display:block;
+}
+#snapCanvas{display:none;position:absolute;top:0;left:0}
+
+/* oval guide — exact match original (border-white/80, 66%×82%) */
+.oval-guide{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  pointer-events:none;
+}
+.oval-guide-ring{
+  border:3px solid rgba(255,255,255,.8);
+  border-radius:50%;
+  width:66%;height:82%;
+  animation:ovalPulse 2s ease-in-out infinite;
+}
+/* scan line */
+.scan-line{
+  position:absolute;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,hsl(350,30%,45%,.6),transparent);
+  animation:scanMove 3s linear infinite;
+  pointer-events:none;
+}
+
+.cam-controls{
+  display:flex;align-items:center;justify-content:center;
+  gap:16px;margin-top:24px;
+}
+.cam-cancel-btn{
+  flex:1;max-width:112px;
+  padding:10px 16px;border-radius:var(--radius);
+  border:1px solid var(--border);background:transparent;
+  font-size:14px;font-weight:500;color:var(--foreground);
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:background .15s;
+}
+.cam-cancel-btn:hover{background:var(--muted)}
+.cam-cancel-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+.cam-shutter{
+  width:64px;height:64px;border-radius:50%;
+  background:var(--primary);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 20px hsl(350,30%,45%,.4);
+  transition:all .15s;flex-shrink:0;
+}
+.cam-shutter:hover{background:hsl(350,30%,40%)}
+.cam-shutter:active{transform:scale(.93)}
+.cam-shutter:disabled{opacity:.4;pointer-events:none}
+.cam-shutter svg{width:24px;height:24px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.cam-spacer{flex:1;max-width:112px}
+/* after capture: retake + confirm */
+.cam-retake-btn{
+  flex:1;padding:12px 16px;border-radius:var(--radius);
+  border:1px solid var(--border);background:transparent;
+  font-size:14px;font-weight:500;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:background .15s;
+}
+.cam-retake-btn:hover{background:var(--muted)}
+.cam-retake-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+.cam-confirm-btn{
+  flex:1;padding:12px 16px;border-radius:var(--radius);
+  background:var(--primary);color:#fff;border:none;
+  font-size:14px;font-weight:500;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:background .15s;
+}
+.cam-confirm-btn:hover{background:hsl(350,30%,40%)}
+.cam-confirm-btn svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+/* error state */
+.cam-error{text-align:center;padding:40px 0}
+.cam-error-icon{
+  width:64px;height:64px;border-radius:50%;
+  background:hsl(0,84%,60%,.1);margin:0 auto 16px;
+  display:flex;align-items:center;justify-content:center;
+}
+.cam-error-icon svg{width:32px;height:32px;stroke:hsl(0,84%,60%);fill:none;stroke-width:1.5;stroke-linecap:round}
+.cam-error p{font-size:13px;color:hsl(0,84%,60%);margin-bottom:24px;max-width:280px;margin-left:auto;margin-right:auto;line-height:1.55}
+.cam-error-btns{display:flex;gap:12px;justify-content:center}
+
+/* ═══════════════════════════════════════════════════
+   STEP: ANALYZING
+═══════════════════════════════════════════════════ */
+.analyzing-wrap{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:96px 0;text-align:center;
+}
+.analyzing-spinner{
+  position:relative;width:80px;height:80px;margin-bottom:24px;
+}
+.spinner-ring{
+  width:80px;height:80px;border-radius:50%;
+  border:4px solid hsl(350,30%,45%,.2);
+  position:absolute;top:0;left:0;
+}
+.spinner-arc{
+  width:80px;height:80px;border-radius:50%;
+  border:4px solid transparent;
+  border-top-color:var(--primary);
+  animation:spin 1s linear infinite;
+  position:absolute;top:0;left:0;
+}
+.analyzing-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:600;color:var(--foreground);margin-bottom:8px}
+.analyzing-desc{font-size:14px;color:var(--muted-fg);max-width:280px;line-height:1.6}
+
+/* ═══════════════════════════════════════════════════
+   STEP: RESULTS
+═══════════════════════════════════════════════════ */
+.results-wrap{animation:fadeUp .4s ease both}
+.results-eyebrow{font-size:12px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--primary);margin-bottom:4px}
+.results-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--foreground);margin-bottom:32px}
+.results-sections{display:flex;flex-direction:column;gap:32px}
+
+/* Face analysis card */
+.face-photo-wrap{
+  position:relative;border-radius:16px;overflow:hidden;aspect-ratio:1/1;
+  max-width:320px;margin:0 auto;background:#000;
+  box-shadow:0 20px 60px rgba(0,0,0,.25);
+}
+.face-photo-wrap img{width:100%;height:100%;object-fit:cover;display:block}
+.face-overlay-canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}
+
+/* zone marker dots */
+.zone-marker{
+  position:absolute;width:24px;height:24px;border-radius:50%;
+  border:2px solid;transform:translate(-50%,-50%);
+}
+.zone-marker-pulse{
+  position:absolute;inset:0;border-radius:50%;
+  animation:markerPulse 2s ease-in-out infinite;
+}
+.issue-acne      .zone-marker,.zone-acne      {background:#ef4444;border-color:#f87171}
+.issue-oiliness  .zone-marker,.zone-oiliness  {background:#facc15;border-color:#fde047}
+.issue-dryness   .zone-marker,.zone-dryness   {background:#60a5fa;border-color:#93c5fd}
+.issue-dark_spots.zone-marker,.zone-dark_spots{background:#a855f7;border-color:#c084fc}
+.issue-default   .zone-marker,.zone-default   {background:#fb923c;border-color:#fdba74}
+
+.face-legend{
+  position:absolute;bottom:8px;left:8px;right:8px;
+  display:flex;flex-wrap:wrap;gap:4px;
+}
+.legend-chip{
+  display:inline-flex;align-items:center;gap:4px;
+  background:rgba(0,0,0,.7);color:#fff;
+  font-size:10px;border-radius:9999px;padding:2px 8px;
+}
+.legend-dot{width:8px;height:8px;border-radius:50%}
+
+/* diagnosis card */
+.diagnosis-label{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-fg);margin-bottom:8px}
+.diagnosis-text{font-size:14px;color:var(--foreground);line-height:1.6}
+/* zones list */
+.zone-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+.zone-row:last-child{margin-bottom:0}
+.zone-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.zone-row-name{font-size:14px;font-weight:500;color:var(--foreground)}
+.zone-row-desc{font-size:14px;color:var(--muted-fg)}
+/* recommendations */
+.rec-card{background:hsl(350,30%,45%,.05);border:1px solid hsl(350,30%,45%,.2);border-radius:var(--radius);padding:16px}
+.rec-label{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--primary);margin-bottom:12px}
+.rec-item{display:flex;align-items:flex-start;gap:8px;font-size:14px;color:var(--foreground);margin-bottom:8px;line-height:1.5}
+.rec-item:last-child{margin-bottom:0}
+.rec-bullet{color:var(--primary);font-weight:700;flex-shrink:0;margin-top:1px}
+
+/* ═══════════════════════════════════════════════════
+   SKIN CARE TIPS — SkinCareTips + TipCard
+═══════════════════════════════════════════════════ */
+.sun-banner{
+  display:flex;align-items:flex-start;gap:12px;
+  background:hsl(45,100%,97%);border:1px solid hsl(45,80%,80%);
+  border-radius:var(--radius);padding:16px;margin-bottom:10px;
+}
+.sun-banner-text{}
+.sun-banner-title{font-size:13px;font-weight:600;color:hsl(35,60%,25%)}
+.sun-banner-body{font-size:13px;color:hsl(35,50%,30%);margin-top:2px;line-height:1.55}
+
+.tips-list{display:flex;flex-direction:column;gap:10px}
+.tip-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);overflow:hidden;
+}
+.tip-btn{
+  width:100%;display:flex;align-items:center;gap:12px;
+  padding:16px;text-align:left;transition:background .15s;cursor:pointer;
+}
+.tip-btn:hover{background:hsl(30,10%,94%,.4)}
+.tip-btn:active{background:hsl(30,10%,94%,.6)}
+.tip-emoji{font-size:24px;line-height:1;flex-shrink:0}
+.tip-btn-text{flex:1;min-width:0}
+.tip-btn-title{font-size:14px;font-weight:600;color:var(--foreground);line-height:1.3}
+.tip-btn-badge{font-size:12px;color:var(--primary);font-weight:500;margin-top:2px;display:block}
+.tip-chevron{
+  flex-shrink:0;transition:transform .2s;color:var(--muted-fg);
+}
+.tip-chevron svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tip-card.open .tip-chevron{transform:rotate(180deg)}
+.tip-body{
+  max-height:0;overflow:hidden;transition:max-height .25s ease;
+  border-top:0 solid var(--border);
+}
+.tip-card.open .tip-body{
+  max-height:800px;border-top-width:1px;
+}
+.tip-body-inner{padding:16px;display:flex;flex-direction:column;gap:12px}
+.tip-items{display:flex;flex-direction:column;gap:8px}
+.tip-item{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--muted-fg);line-height:1.5}
+.tip-item-bullet{color:var(--primary);font-weight:700;flex-shrink:0;margin-top:1px}
+.benefits-label{font-size:12px;font-weight:600;color:var(--foreground);margin-bottom:8px}
+.benefits-chips{display:flex;flex-wrap:wrap;gap:6px}
+.benefits-chip{font-size:12px;background:hsl(350,30%,45%,.1);color:var(--primary);border-radius:9999px;padding:4px 10px;font-weight:500}
+.type-note{background:hsl(350,30%,45%,.05);border:1px solid hsl(350,30%,45%,.15);border-radius:8px;padding:12px}
+.type-note-title{font-size:12px;font-weight:600;color:var(--primary);margin-bottom:4px}
+.type-note-body{font-size:12px;color:var(--foreground);line-height:1.6}
+
+/* ═══════════════════════════════════════════════════
+   DAILY ROUTINE — DailyRoutine
+═══════════════════════════════════════════════════ */
+.routine-photo{
+  position:relative;border-radius:16px;overflow:hidden;height:176px;margin-bottom:16px;
+}
+.routine-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.routine-photo-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(0,0,0,.65) 0%,rgba(0,0,0,.1) 50%,transparent 100%);
+  display:flex;align-items:flex-end;padding:16px;
+}
+.routine-photo-overlay p{color:#fff;font-size:14px;font-weight:500;line-height:1.4}
+.routine-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:400px){.routine-cols{grid-template-columns:1fr}}
+.routine-col{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.routine-col-head{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.routine-col-icon{
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.routine-col-icon.morning{background:hsl(45,100%,92%)}
+.routine-col-icon.night{background:hsl(240,60%,94%)}
+.routine-col-icon svg{width:16px;height:16px;stroke-width:2;stroke-linecap:round;fill:none}
+.routine-col-icon.morning svg{stroke:hsl(40,90%,45%)}
+.routine-col-icon.night svg{stroke:hsl(240,60%,55%)}
+.routine-col-label{font-size:13px;font-weight:600;color:var(--foreground)}
+.routine-steps{display:flex;flex-direction:column;gap:12px}
+.routine-step{display:flex;align-items:center;gap:12px}
+.routine-step-icon{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--muted);display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+}
+.routine-step-body{flex:1;min-width:0}
+.routine-step-action{font-size:13px;font-weight:500;color:var(--foreground);line-height:1.2}
+.routine-step-detail{font-size:12px;color:var(--muted-fg)}
+.routine-step-num{
+  font-size:11px;background:var(--muted);color:var(--muted-fg);
+  border-radius:9999px;padding:2px 8px;flex-shrink:0;font-weight:500;
+}
+.routine-tip{font-size:12px;color:var(--muted-fg);text-align:center;line-height:1.6;padding:0 8px;margin-top:4px}
+
+/* ═══════════════════════════════════════════════════
+   PAGE GROUP
+═══════════════════════════════════════════════════ */
+.group-header{text-align:center;margin-bottom:40px;animation:fadeDown .4s ease both}
+.group-header h1{font-family:'Playfair Display',serif;font-size:30px;font-weight:700;color:var(--foreground);margin-top:16px}
+.group-header p{font-size:14px;color:var(--muted-fg);margin-top:12px;max-width:280px;margin-left:auto;margin-right:auto;line-height:1.6}
+.member-list{display:flex;flex-direction:column;gap:16px}
+.member-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:16px;padding:16px;
+  display:flex;align-items:center;gap:16px;
+  transition:box-shadow .2s;
+}
+.member-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.08)}
+.member-avatar{
+  width:48px;height:48px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:13px;flex-shrink:0;
+}
+.av0{background:hsl(350,70%,90%);color:hsl(350,60%,40%)}
+.av1{background:hsl(270,60%,90%);color:hsl(270,50%,40%)}
+.av2{background:hsl(45,80%,88%);color:hsl(40,60%,35%)}
+.av3{background:hsl(145,50%,88%);color:hsl(145,45%,30%)}
+.av4{background:hsl(200,70%,88%);color:hsl(200,55%,35%)}
+.av5{background:hsl(330,65%,90%);color:hsl(330,55%,40%)}
+.member-info{flex:1;min-width:0}
+.member-name{font-size:14px;font-weight:600;color:var(--foreground)}
+.member-email{
+  display:flex;align-items:center;gap:6px;
+  font-size:12px;color:var(--muted-fg);margin-top:4px;
+}
+.member-email svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.member-email a{color:var(--muted-fg);transition:color .15s;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.member-email a:hover{color:var(--primary)}
+.inst-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:16px;padding:24px;text-align:center;margin-top:40px;
+  animation:fadeUp .4s .6s ease both;
+}
+.inst-label{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted-fg);margin-bottom:8px}
+.inst-name{font-size:15px;font-weight:600;color:var(--foreground)}
+.inst-sub{font-size:13px;color:var(--muted-fg);margin-top:4px}
+.member-card{animation:fadeUp .4s ease both}
+.member-card:nth-child(1){animation-delay:.0s}
+.member-card:nth-child(2){animation-delay:.08s}
+.member-card:nth-child(3){animation-delay:.16s}
+.member-card:nth-child(4){animation-delay:.24s}
+.member-card:nth-child(5){animation-delay:.32s}
+.member-card:nth-child(6){animation-delay:.40s}
+
+/* ═══════════════════════════════════════════════════
+   PAGE ABOUT
+═══════════════════════════════════════════════════ */
+.about-header{text-align:center;margin-bottom:40px;animation:fadeDown .4s ease both}
+.about-header h1{font-family:'Playfair Display',serif;font-size:30px;font-weight:700;color:var(--foreground);line-height:1.2;margin-top:16px}
+.about-header p{font-size:14px;color:var(--muted-fg);margin-top:12px;max-width:280px;margin-left:auto;margin-right:auto;line-height:1.6}
+.about-hero-img{position:relative;border-radius:16px;overflow:hidden;height:192px;margin-bottom:32px;animation:fadeUp .4s .1s ease both}
+.about-hero-img img{width:100%;height:100%;object-fit:cover;display:block}
+.about-hero-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(0,0,0,.6) 0%,transparent 60%);
+  display:flex;align-items:flex-end;padding:20px;
+}
+.about-hero-overlay p{color:#fff;font-size:13px;font-weight:500}
+.about-sections{display:flex;flex-direction:column;gap:16px}
+.about-section{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:16px;padding:20px;
+}
+.about-section:nth-child(1){animation:fadeUp .4s .15s ease both}
+.about-section:nth-child(2){animation:fadeUp .4s .25s ease both}
+.about-section:nth-child(3){animation:fadeUp .4s .35s ease both}
+.about-section:nth-child(4){animation:fadeUp .4s .45s ease both}
+.about-section-head{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.about-section-icon{
+  width:36px;height:36px;border-radius:10px;
+  background:hsl(350,30%,45%,.1);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.about-section-icon svg{width:16px;height:16px;stroke:var(--primary);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.about-section-title{font-size:14px;font-weight:600;color:var(--foreground);line-height:1.3}
+.about-section-body{font-size:13px;color:var(--muted-fg);line-height:1.7}
+.tech-box{background:hsl(30,10%,94%,.5);border-radius:16px;padding:20px;margin-top:32px;animation:fadeUp .4s .7s ease both}
+.tech-label{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted-fg);margin-bottom:12px}
+.tech-chips{display:flex;flex-wrap:wrap;gap:8px}
+.tech-chip{
+  font-size:12px;background:var(--card);border:1px solid var(--border);
+  border-radius:9999px;padding:4px 12px;color:var(--foreground);font-weight:500;
+}
+.about-disclaimer{text-align:center;font-size:12px;color:var(--muted-fg);margin-top:32px}
+
+/* ═══════════════════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════════════════ */
+@keyframes fadeUp  {from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin    {to{transform:rotate(360deg)}}
+@keyframes ovalPulse{0%,100%{opacity:.5}50%{opacity:1}}
+@keyframes scanMove{from{top:-2px}to{top:102%}}
+@keyframes markerPulse{0%,100%{transform:scale(1);opacity:.4}50%{transform:scale(1.6);opacity:0}}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════ HEADER ══════════════════════════ -->
+<header>
+  <div class="header-inner">
+    <a class="logo-link" href="#" onclick="goPage('home');return false">
+      <div class="logo-box" id="logoBox"><span>AF</span></div>
+      <span class="logo-label">Análise Facial</span>
+    </a>
+    <button class="menu-btn" onclick="openDrawer()" aria-label="Menu">
+      <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- ══════════════════════════ DRAWER ══════════════════════════ -->
+<div class="overlay" id="overlay" onclick="closeDrawer()"></div>
+<nav class="drawer" id="drawer">
+  <div class="drawer-head">
+    <span class="drawer-title">Menu</span>
+    <button class="drawer-close" onclick="closeDrawer()">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="drawer-nav">
+    <button class="nav-link active" id="nav-home" onclick="goPage('home');closeDrawer()">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+      Análise Facial
+    </button>
+    <button class="nav-link" id="nav-group" onclick="goPage('group');closeDrawer()">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Grupo
+    </button>
+    <button class="nav-link" id="nav-about" onclick="goPage('about');closeDrawer()">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      Sobre o Projeto
+    </button>
+  </div>
+  <div class="drawer-foot">Biomedicina Estética · CEUNSP</div>
+</nav>
+
+<!-- ══════════════════════════ PAGE HOME ══════════════════════════ -->
+<div class="page active" id="page-home">
+  <div class="page-inner">
+
+    <!-- STEP: SELECT -->
+    <div id="step-select">
+      <div class="home-hero">
+        <div class="badge-pill">✨ Escala de Fitzpatrick</div>
+        <h1>Análise Facial</h1>
+        <p>Selecione o fototipo mais próximo da sua cor de pele para iniciar a análise.</p>
+      </div>
+      <div class="skin-list" id="skinList"></div>
+      <p class="home-footer-note">Classificação baseada na Escala de Fitzpatrick, utilizada em dermatologia para avaliar a resposta da pele ao sol.</p>
+    </div>
+
+    <!-- STEP: CAMERA -->
+    <div id="step-camera" style="display:none">
+      <button class="back-btn" onclick="goStep('select')">
+        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Voltar
+      </button>
+      <div class="cam-header">
+        <div class="eyebrow" id="camEyebrow"></div>
+        <h2>Tire uma Selfie</h2>
+        <p>Use boa iluminação e fique de frente para a câmera</p>
+      </div>
+
+      <!-- error state -->
+      <div class="cam-error" id="camError" style="display:none">
+        <div class="cam-error-icon">
+          <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+        </div>
+        <p id="camErrorMsg">Não foi possível acessar a câmera.</p>
+        <div class="cam-error-btns">
+          <button class="btn cam-cancel-btn" style="flex:none;width:auto" onclick="goStep('select')">
+            <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Voltar
+          </button>
+          <button class="btn-primary-full" style="width:auto;padding:10px 20px" onclick="startCamera()">Tentar novamente</button>
+        </div>
+      </div>
+
+      <!-- camera UI -->
+      <div id="camUI">
+        <p class="cam-hint">Posicione seu rosto dentro da moldura oval</p>
+        <div class="cam-viewport">
+          <video id="videoEl" autoplay playsinline muted style="transform:scaleX(-1)"></video>
+          <canvas id="snapCanvas"></canvas>
+          <img id="snapImg" style="display:none;width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0" alt="Foto capturada"/>
+          <div class="oval-guide" id="ovalGuide"><div class="oval-guide-ring"></div></div>
+          <div class="scan-line" id="scanLine" style="display:none"></div>
+        </div>
+        <canvas id="hiddenCanvas" style="display:none"></canvas>
+        <div class="cam-controls" id="camControls">
+          <button class="cam-cancel-btn" onclick="goStep('select')">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Cancelar
+          </button>
+          <button class="cam-shutter" id="shutterBtn" onclick="capturePhoto()" disabled>
+            <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </button>
+          <div class="cam-spacer"></div>
+        </div>
+        <div class="cam-controls" id="camControls2" style="display:none">
+          <button class="cam-retake-btn" onclick="retakePhoto()">
+            <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.71"/></svg>
+            Repetir
+          </button>
+          <button class="cam-confirm-btn" onclick="confirmPhoto()">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Analisar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP: ANALYZING -->
+    <div id="step-analyzing" style="display:none">
+      <div class="analyzing-wrap">
+        <div class="analyzing-spinner">
+          <div class="spinner-ring"></div>
+          <div class="spinner-arc"></div>
+        </div>
+        <div class="analyzing-title">Analisando sua pele...</div>
+        <p class="analyzing-desc">Nossa IA está avaliando a condição da sua pele e preparando recomendações personalizadas.</p>
+      </div>
+    </div>
+
+    <!-- STEP: RESULTS -->
+    <div id="step-results" style="display:none">
+      <div class="results-wrap">
+        <div class="results-eyebrow" id="resultsEyebrow"></div>
+        <div class="results-title">Sua Análise Facial</div>
+        <div class="results-sections">
+          <!-- face card -->
+          <div id="faceAnalysisCard"></div>
+          <!-- care tips -->
+          <div id="skinCareTips"></div>
+          <!-- daily routine -->
+          <div id="dailyRoutine"></div>
+          <!-- restart -->
+          <button class="btn-outline" onclick="restartAll()">
+            <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.71"/></svg>
+            Fazer nova análise
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════ PAGE GROUP ══════════════════════════ -->
+<div class="page" id="page-group">
+  <div class="page-inner">
+    <div class="group-header">
+      <div class="badge-pill">
+        <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+        Biomedicina Estética
+      </div>
+      <h1>Nossa Equipe</h1>
+      <p>Estudantes de Biomedicina do CEUNSP responsáveis pelo desenvolvimento deste projeto.</p>
+    </div>
+    <div class="member-list">
+      <div class="member-card"><div class="member-avatar av0">IM</div><div class="member-info"><div class="member-name">Isadora Moreira</div><div class="member-email"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:isadora.moreira@cs.ceunsp.edu.br">isadora.moreira@cs.ceunsp.edu.br</a></div></div></div>
+      <div class="member-card"><div class="member-avatar av1">GS</div><div class="member-info"><div class="member-name">Gabriella Santos</div><div class="member-email"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:gabriella.santos@cs.ceunsp.edu.br">gabriella.santos@cs.ceunsp.edu.br</a></div></div></div>
+      <div class="member-card"><div class="member-avatar av2">AC</div><div class="member-info"><div class="member-name">Anelise Coleone</div><div class="member-email"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:anelise.coleone@cs.ceunsp.edu.br">anelise.coleone@cs.ceunsp.edu.br</a></div></div></div>
+      <div class="member-card"><div class="member-avatar av3">MC</div><div class="member-info"><div class="member-name">Maria Clara</div><div class="member-email"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:maria.callegaro@cs.ceunsp.edu.br">maria.callegaro@cs.ceunsp.edu.br</a></div></div></div>
+      <div class="member-card"><div class="member-avatar av4">EO</div><div class="member-info"><div class="member-name">Evellyn Oliveira</div><div class="member-email"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:evellyn.oliveira@cs.ceunsp.edu.br">evellyn.oliveira@cs.ceunsp.edu.br</a></div></div></div>
+      <div class="member-card"><div class="member-avatar av5">NC</div><div class="member-info"><div class="member-name">Natasha Coelho</div><div class="member-email"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:natasha.coelho@cs.ceunsp.edu.br">natasha.coelho@cs.ceunsp.edu.br</a></div></div></div>
+    </div>
+    <div class="inst-card">
+      <div class="inst-label">Instituição</div>
+      <div class="inst-name">CEUNSP</div>
+      <div class="inst-sub">Curso de Biomedicina — Estética</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════ PAGE ABOUT ══════════════════════════ -->
+<div class="page" id="page-about">
+  <div class="page-inner">
+    <div class="about-header">
+      <div class="badge-pill">
+        <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>
+        Sobre o Projeto
+      </div>
+      <h1>Análise Facial com IA</h1>
+      <p>Uma iniciativa acadêmica em Biomedicina Estética que une tecnologia e saúde da pele.</p>
+    </div>
+    <div class="about-hero-img">
+      <img src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=900&auto=format&fit=crop&q=80" alt="Biomedicina estética"/>
+      <div class="about-hero-overlay"><p>Biomedicina Estética · CEUNSP · 2025</p></div>
+    </div>
+    <div class="about-sections">
+      <div class="about-section">
+        <div class="about-section-head">
+          <div class="about-section-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+          <div class="about-section-title">Objetivo do Projeto</div>
+        </div>
+        <p class="about-section-body">Desenvolver uma ferramenta digital de análise facial acessível que auxilie na identificação do fototipo de pele (Escala de Fitzpatrick) e na orientação de cuidados básicos personalizados, utilizando inteligência artificial para análise de imagem.</p>
+      </div>
+      <div class="about-section">
+        <div class="about-section-head">
+          <div class="about-section-icon"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+          <div class="about-section-title">Por que desenvolvemos?</div>
+        </div>
+        <p class="about-section-body">A falta de informação sobre cuidados com a pele é uma realidade para grande parte da população brasileira. Muitas pessoas utilizam produtos inadequados para seu tipo de pele por não conhecerem seu fototipo, o que pode levar a danos como queimaduras, manchas e fotoenvelhecimento precoce. Este projeto nasce da necessidade de democratizar o acesso à educação dermatológica.</p>
+      </div>
+      <div class="about-section">
+        <div class="about-section-head">
+          <div class="about-section-icon"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+          <div class="about-section-title">A Escala de Fitzpatrick</div>
+        </div>
+        <p class="about-section-body">Criada pelo dermatologista Thomas Fitzpatrick em 1975, a escala é amplamente utilizada na dermatologia para classificar a resposta da pele humana à radiação ultravioleta. Divide-se em 6 fototipos, do mais claro (Tipo I) ao mais escuro (Tipo VI), e é fundamental para prescrição de protetores solares, procedimentos estéticos e avaliação de risco para câncer de pele.</p>
+      </div>
+      <div class="about-section">
+        <div class="about-section-head">
+          <div class="about-section-icon"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+          <div class="about-section-title">Importância na Biomedicina Estética</div>
+        </div>
+        <p class="about-section-body">Na biomedicina estética contemporânea, a análise do fototipo é etapa obrigatória antes de qualquer procedimento — desde peelings químicos e lasers até fotorejuvenescimento. Conhecer o fototipo do paciente permite ao profissional personalizar protocolos, minimizar riscos e potencializar resultados. A incorporação de IA neste processo representa um avanço na triagem e educação do paciente.</p>
+      </div>
+    </div>
+    <div class="tech-box">
+      <div class="tech-label">Tecnologias Utilizadas</div>
+      <div class="tech-chips">
+        <span class="tech-chip">HTML · CSS · JavaScript</span>
+        <span class="tech-chip">Inteligência Artificial (LLM)</span>
+        <span class="tech-chip">Câmera do Dispositivo</span>
+        <span class="tech-chip">Escala de Fitzpatrick</span>
+        <span class="tech-chip">Análise de Imagem</span>
+      </div>
+    </div>
+    <p class="about-disclaimer">Este projeto tem fins educacionais e não substitui consulta médica ou dermatológica.</p>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   DATA — exatamente do código original
+═══════════════════════════════════════════════════ */
+const SKIN_TYPES = [
+  {level:1,roman:'I',  name:'Muito Clara',      description:'Pele muito branca, cabelos ruivos ou loiros, olhos claros. Sardas frequentes. Extremamente sensível ao sol.'},
+  {level:2,roman:'II', name:'Clara',            description:'Pele branca, cabelos loiros ou castanhos claros. Olhos claros a médios. Sensível ao sol.'},
+  {level:3,roman:'III',name:'Morena Clara',      description:'Pele branca a levemente morena. Cabelos castanhos. Queima moderadamente e bronzeia gradualmente.'},
+  {level:4,roman:'IV', name:'Morena Moderada',   description:'Pele morena a castanha clara. Cabelos castanhos escuros a pretos. Bronzeia com facilidade.'},
+  {level:5,roman:'V',  name:'Morena Escura',     description:'Pele morena escura a parda. Cabelos pretos. Dificilmente queima, bronzeia muito.'},
+  {level:6,roman:'VI', name:'Negra',             description:'Pele negra, retinta. Cabelos pretos. Alta proteção natural. Nunca queima.'},
+];
+const ZONE_POSITIONS = {
+  forehead:   {x:50,y:22}, left_cheek:{x:27,y:57}, right_cheek:{x:73,y:57},
+  nose:       {x:50,y:50}, chin:      {x:50,y:76},  t_zone:    {x:50,y:38},
+};
+const ISSUE_CONFIG = {
+  acne:      {color:'#ef4444',border:'#f87171',label:'Acne/Espinha'},
+  oiliness:  {color:'#facc15',border:'#fde047',label:'Oleosidade'},
+  dryness:   {color:'#60a5fa',border:'#93c5fd',label:'Ressecamento'},
+  dark_spots:{color:'#a855f7',border:'#c084fc',label:'Manchas'},
+  default:   {color:'#fb923c',border:'#fdba74',label:'Atenção'},
+};
+const SUN_REACTIONS = {
+  I:'Sempre queima, nunca bronzeia.',
+  II:'Queima facilmente, bronzeia muito pouco.',
+  III:'Queima moderadamente, bronzeia moderadamente.',
+  IV:'Queima pouco, bronzeia com facilidade.',
+  V:'Raramente queima, bronzeia muito.',
+  VI:'Nunca queima, altamente pigmentada.',
+};
+const TIPS = [
+  {id:1,emoji:'☀️',title:'Usar protetor solar todos os dias',items:['Use FPS 30 ou maior','Aplique mesmo em dias nublados','Reaplique a cada 2 ou 3 horas, principalmente ao ar livre'],benefitsLabel:'Ajuda a prevenir:',benefits:['manchas','envelhecimento precoce','câncer de pele'],typeSpecific:{I:{badge:'FPS 50+ obrigatório',note:'Sua pele é extremamente fotossensível. FPS 50+ é essencial. Prefira protetores com óxido de zinco ou dióxido de titânio e reaplique frequentemente.'},II:{badge:'FPS 50 recomendado',note:'Use FPS 50 todo dia. Evite exposição entre 10h e 16h sem proteção e use chapéu e óculos de sol.'},III:{badge:'FPS 30–50 recomendado',note:'FPS 30 no dia a dia; FPS 50 em exposição prolongada ou praia. Não pule mesmo em dias frios ou nublados.'},IV:{badge:'FPS 30 recomendado',note:'Mesmo com pele mais resistente ao sol, o protetor é essencial para evitar manchas e hiperpigmentação.'},V:{badge:'FPS 15–30 recomendado',note:'Use protetor para prevenir manchas escuras e danos cumulativos. Pele escura não está imune ao fotoenvelhecimento.'},VI:{badge:'FPS 15+ recomendado',note:'Sua pele tem proteção natural elevada, mas o protetor solar previne hiperpigmentação e outros danos ao DNA celular.'}},},
+  {id:2,emoji:'🧴',title:'Lavar o rosto corretamente',items:['Lave o rosto 2 vezes ao dia (manhã e noite)','Use sabonete específico para o seu tipo de pele','Evite água muito quente'],benefitsLabel:'Remove:',benefits:['oleosidade','poluição','resíduos de produtos'],typeSpecific:{I:{badge:'Pele sensível',note:'Use sabonetes ultra-suaves, sem fragrância e sem álcool. Água fria ou morna. Evite esfregar.'},II:{badge:'Pele sensível',note:'Fórmulas suaves e sem álcool. Evite esfoliantes físicos agressivos.'},III:{badge:'Pele mista',note:'Sabonetes balanceadores de pH para controlar oleosidade sem ressecar as áreas mais secas.'},IV:{badge:'Pele oleosa/mista',note:'Gel de limpeza com ácido salicílico ou niacinamida para controlar sebo e prevenir espinhas.'},V:{badge:'Pele oleosa',note:'Dupla limpeza à noite se usar maquiagem: óleo de limpeza + gel/espuma.'},VI:{badge:'Pele oleosa',note:'Limpeza eficiente previne poros entupidos. Use gel e água morna. Nunca durma sem limpar o rosto.'}},},
+  {id:3,emoji:'💧',title:'Hidratar a pele',items:['Mesmo pele oleosa precisa de hidratação','Gel ou oil-free para pele oleosa','Creme ou loção para pele seca','Mantém a barreira de proteção da pele saudável'],typeSpecific:{I:{badge:'Hidratação rica',note:'Hidratantes com ceramidas, manteiga de karité e ácido hialurônico. Evite fragrâncias e álcool.'},II:{badge:'Hidratação moderada',note:'Loções com niacinamida e ácido hialurônico. Aplique no rosto ainda úmido para melhor absorção.'},III:{badge:'Hidratação balanceada',note:'Géis-creme leves que hidratam sem deixar a pele oleosa nas áreas mais propensas.'},IV:{badge:'Hidratante oil-free',note:'Géis ou fluidos oil-free com niacinamida para hidratar e regular a produção de sebo.'},V:{badge:'Hidratação profunda',note:'Óleos vegetais (jojoba, argan) e manteigas naturais mantêm o viço e evitam a aparência acinzentada.'},VI:{badge:'Hidratação intensa',note:'Manteiga de karité, glicerina e óleo de coco são aliados poderosos para manter a pele hidratada e com brilho saudável.'}},},
+  {id:4,emoji:'🌙',title:'Não dormir com maquiagem',items:['Use demaquilante, água micelar ou cleansing oil antes de dormir','Faça dupla limpeza se usar base, protetor com cor ou maquiagem pesada','Sempre finalize com hidratante noturno'],benefitsLabel:'Evita:',benefits:['acne','poros entupidos','irritação da pele'],typeSpecific:{I:{badge:'Demaquilante suave',note:'Use água micelar suave ou óleo de limpeza. Produtos sem álcool e sem fragrância são fundamentais.'},IV:{badge:'Dupla limpeza',note:'A dupla limpeza é essencial para remover maquiagem completamente e evitar cravos e espinhas.'},V:{badge:'Dupla limpeza',note:'Resíduos de maquiagem em pele escura podem causar manchas. A dupla limpeza com óleo + gel é ideal.'},VI:{badge:'Dupla limpeza',note:'Remova completamente qualquer produto para evitar hiperpigmentação pós-inflamatória — difícil de tratar em pele negra.'}},},
+  {id:5,emoji:'💦',title:'Beber bastante água',items:['Beba ao menos 2 litros de água por dia','Auxilia na hidratação interna da pele','Complementa a hidratação tópica'],benefitsLabel:'Pode melhorar:',benefits:['viço','elasticidade','aparência geral']},
+  {id:6,emoji:'🥗',title:'Manter alimentação equilibrada',items:['Consuma frutas, vegetais e alimentos ricos em vitamina C','Inclua ômega 3 e antioxidantes na dieta','Evite excesso de açúcar e ultraprocessados'],benefitsLabel:'Benefícios:',benefits:['pele mais firme','menos inflamação','viço natural']},
+  {id:7,emoji:'🚫',title:'Não espremer espinhas',items:['Use produtos específicos: ácido salicílico, benzoil peróxida ou adapaleno','Procure um dermatologista para tratamentos eficazes','Compressas de gelo ajudam a reduzir a inflamação'],benefitsLabel:'Espremer pode causar:',benefits:['manchas','cicatrizes','infecções'],typeSpecific:{IV:{badge:'Atenção à hiperpigmentação',note:'Peles morenas têm alta tendência a manchar após inflamação. Nunca esprema e trate espinhas com produtos adequados.'},V:{badge:'Risco alto de manchas',note:'Hiperpigmentação pós-inflamatória é muito comum neste fototipo. Trate espinhas sem manipular e consulte um dermatologista.'},VI:{badge:'Risco de queloide e mancha',note:'Pele negra tem alta tendência a queloides e manchas escuras. Evite qualquer manipulação e sempre consulte um especialista.'}},},
+];
+const MORNING = [
+  {step:1,emoji:'🧴',action:'Limpeza Facial',detail:'Sabonete para seu tipo de pele'},
+  {step:2,emoji:'💧',action:'Tônico + Sérum',detail:'Vitamina C ou niacinamida'},
+  {step:3,emoji:'🤍',action:'Hidratante',detail:'Leve ou oil-free'},
+  {step:4,emoji:'☀️',action:'Protetor Solar',detail:'FPS de acordo com seu fototipo'},
+];
+const EVENING = [
+  {step:1,emoji:'🌸',action:'Demaquilar',detail:'Óleo de limpeza ou água micelar'},
+  {step:2,emoji:'🧴',action:'Limpeza Facial',detail:'Sabonete específico'},
+  {step:3,emoji:'✨',action:'Ativo Noturno',detail:'Retinol, AHA/BHA ou ácido hialurônico'},
+  {step:4,emoji:'🌙',action:'Hidratante Noturno',detail:'Creme nutritivo ou reparador'},
+];
+
+/* ═══════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════ */
+let selType = null, capturedBlob = null, capturedDataURL = null,
+    mediaStream = null, currentStep = 'select', analysis = null;
+
+/* ═══════════════════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════════════════ */
+function goPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.nav-link').forEach(n=>n.classList.remove('active'));
+  document.getElementById('nav-'+id).classList.add('active');
+  window.scrollTo(0,0);
+  if(id!=='home') stopCamera();
+}
+function openDrawer(){
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+}
+function closeDrawer(){
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+
+/* ═══════════════════════════════════════════════════
+   SKIN TYPE LIST — render
+═══════════════════════════════════════════════════ */
+function renderSkinList(){
+  const el = document.getElementById('skinList');
+  el.innerHTML = SKIN_TYPES.map(t=>`
+    <button class="skin-card" onclick="selectType(${t.level})" id="sc${t.level}">
+      <div class="skin-card-swatch sw${t.level}"></div>
+      <div class="skin-card-body">
+        <div class="skin-card-roman">Tipo ${t.roman}</div>
+        <div class="skin-card-name">${t.name}</div>
+        <div class="skin-card-desc">${t.description}</div>
+      </div>
+      <div class="skin-card-check">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+    </button>`).join('');
+}
+
+function selectType(level){
+  selType = SKIN_TYPES.find(t=>t.level===level);
+  goStep('camera');
+}
+
+/* ═══════════════════════════════════════════════════
+   STEPS
+═══════════════════════════════════════════════════ */
+function goStep(s){
+  ['select','camera','analyzing','results'].forEach(id=>{
+    document.getElementById('step-'+id).style.display = id===s ? '' : 'none';
+  });
+  currentStep = s;
+  window.scrollTo(0,0);
+  if(s==='camera') initCamera();
+  if(s==='select') stopCamera();
+}
+
+/* ═══════════════════════════════════════════════════
+   CAMERA
+═══════════════════════════════════════════════════ */
+async function initCamera(){
+  document.getElementById('camEyebrow').textContent = selType ? `Fototipo ${selType.roman} — ${selType.name}` : '';
+  document.getElementById('camError').style.display = 'none';
+  document.getElementById('camUI').style.display = 'block';
+  document.getElementById('camControls').style.display = 'flex';
+  document.getElementById('camControls2').style.display = 'none';
+  document.getElementById('ovalGuide').style.display = 'flex';
+  document.getElementById('snapImg').style.display = 'none';
+  document.getElementById('videoEl').style.display = 'block';
+  document.getElementById('shutterBtn').disabled = true;
+  capturedBlob = null; capturedDataURL = null;
+  await startCamera();
+}
+
+async function startCamera(){
+  stopCamera();
+  document.getElementById('camError').style.display = 'none';
+  try{
+    mediaStream = await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:'user',width:{ideal:720},height:{ideal:720}},audio:false
+    });
+    const vid = document.getElementById('videoEl');
+    vid.srcObject = mediaStream;
+    vid.onloadedmetadata = ()=>{
+      document.getElementById('shutterBtn').disabled = false;
+      document.getElementById('scanLine').style.display = 'block';
+    };
+  } catch(e){
+    stopCamera();
+    document.getElementById('camUI').style.display = 'none';
+    document.getElementById('camError').style.display = 'block';
+    document.getElementById('camErrorMsg').textContent = 'Não foi possível acessar a câmera. Verifique as permissões nas configurações do seu navegador.';
+  }
+}
+function stopCamera(){
+  if(mediaStream){mediaStream.getTracks().forEach(t=>t.stop());mediaStream=null;}
+  document.getElementById('scanLine').style.display='none';
+}
+
+function capturePhoto(){
+  const vid = document.getElementById('videoEl');
+  const canvas = document.getElementById('hiddenCanvas');
+  const size = Math.min(vid.videoWidth, vid.videoHeight);
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  const ox = (vid.videoWidth-size)/2, oy = (vid.videoHeight-size)/2;
+  ctx.save();ctx.translate(size,0);ctx.scale(-1,1);
+  ctx.drawImage(vid,ox,oy,size,size,0,0,size,size);
+  ctx.restore();
+  capturedDataURL = canvas.toDataURL('image/jpeg',0.9);
+  canvas.toBlob(b=>{capturedBlob=b;},'image/jpeg',0.9);
+  // show captured
+  const img = document.getElementById('snapImg');
+  img.src = capturedDataURL;
+  img.style.display = 'block';
+  document.getElementById('videoEl').style.display = 'none';
+  document.getElementById('ovalGuide').style.display = 'none';
+  document.getElementById('scanLine').style.display = 'none';
+  document.getElementById('camControls').style.display = 'none';
+  document.getElementById('camControls2').style.display = 'flex';
+  stopCamera();
+}
+
+function retakePhoto(){
+  capturedBlob = null; capturedDataURL = null;
+  document.getElementById('snapImg').style.display = 'none';
+  document.getElementById('videoEl').style.display = 'block';
+  document.getElementById('ovalGuide').style.display = 'flex';
+  document.getElementById('camControls').style.display = 'flex';
+  document.getElementById('camControls2').style.display = 'none';
+  document.getElementById('shutterBtn').disabled = true;
+  startCamera();
+}
+
+async function confirmPhoto(){
+  if(!capturedDataURL) return;
+  goStep('analyzing');
+  const result = await runAnalysis(capturedDataURL, capturedBlob);
+  analysis = result;
+  renderResults();
+  goStep('results');
+}
+
+/* ═══════════════════════════════════════════════════
+   AI ANALYSIS — configure API key here
+═══════════════════════════════════════════════════ */
+async function runAnalysis(dataURL){
+  const API_KEY = ''; // ← insira sua chave Anthropic aqui
+  await delay(400);
+  if(!API_KEY) return mockAnalysis();
+  try{
+    const b64 = dataURL.split(',')[1];
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({
+        model:'claude-opus-4-5',max_tokens:1024,
+        messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
+          {type:'text',text:`Você é um assistente dermatológico especializado em análise de pele.\nA pessoa se identificou como Fototipo ${selType.roman} (${selType.name}) na Escala de Fitzpatrick.\n\nAnalise a pele do rosto na imagem e retorne SOMENTE JSON válido:\n{"summary":"string","concerns":[{"zone":"forehead|nose|left_cheek|right_cheek|chin|t_zone","zone_label":"string","issue":"acne|oiliness|dryness|dark_spots","description":"string","severity":"leve|moderado|intenso"}],"recommendations":["string"]}`}
+        ]}]
+      })
+    });
+    const d = await res.json();
+    const txt = d.content[0].text.replace(/```json|```/g,'').trim();
+    return JSON.parse(txt);
+  } catch(e){ return mockAnalysis(); }
+}
+
+function mockAnalysis(){
+  const lvl = selType.level;
+  const scenarios = [
+    {summary:'Pele bem hidratada no geral, com leve oleosidade na zona T (testa e nariz). Pequenas imperfeições detectadas na região da testa.',concerns:[{zone:'t_zone',zone_label:'Zona T',issue:'oiliness',description:'Oleosidade moderada na zona T',severity:'moderado'},{zone:'forehead',zone_label:'Testa',issue:'acne',description:'Pequenas imperfeições',severity:'leve'}],recommendations:['Use um tônico com niacinamida para controlar a oleosidade','Aplique protetor solar oil-free para fototipos mais claros','Considere usar sérum de vitamina C pela manhã']},
+    {summary:'Pele com boa textura e tom uniforme. Leve ressecamento nas bochechas, comum em peles mais claras. Manchas leves detectadas.',concerns:[{zone:'left_cheek',zone_label:'Bochecha Esquerda',issue:'dryness',description:'Ressecamento leve',severity:'leve'},{zone:'right_cheek',zone_label:'Bochecha Direita',issue:'dark_spots',description:'Manchas leves',severity:'leve'}],recommendations:['Hidrate bem as bochechas com creme rico','Use protetor solar FPS 50+ todos os dias','Evite exposição solar entre 10h e 16h']},
+  ];
+  return scenarios[lvl<=3?0:1];
+}
+
+/* ═══════════════════════════════════════════════════
+   RENDER RESULTS
+═══════════════════════════════════════════════════ */
+function renderResults(){
+  // eyebrow
+  document.getElementById('resultsEyebrow').textContent =
+    `Resultado — Fototipo ${selType.roman} · ${selType.name}`;
+  // face analysis card
+  renderFaceCard();
+  // tips
+  renderCareTips();
+  // routine
+  renderRoutine();
+}
+
+function renderFaceCard(){
+  const concerns = analysis?.concerns || [];
+  const issueKeys = [...new Set(concerns.map(c=>c.issue))];
+  const legendHTML = issueKeys.map(issue=>{
+    const cfg = ISSUE_CONFIG[issue]||ISSUE_CONFIG.default;
+    return `<span class="legend-chip"><span class="legend-dot" style="background:${cfg.color}"></span>${cfg.label}</span>`;
+  }).join('');
+
+  const zoneMarkers = concerns.map((c,i)=>{
+    const pos = ZONE_POSITIONS[c.zone];
+    const cfg = ISSUE_CONFIG[c.issue]||ISSUE_CONFIG.default;
+    if(!pos) return '';
+    return `<div style="position:absolute;width:24px;height:24px;border-radius:50%;background:${cfg.color};border:2px solid ${cfg.border};left:${pos.x}%;top:${pos.y}%;transform:translate(-50%,-50%);box-shadow:0 2px 8px rgba(0,0,0,.3);animation:zoneIn .4s ${.4+i*.2}s ease both;opacity:0">
+      <div style="position:absolute;inset:0;border-radius:50%;background:${cfg.color};opacity:.4;animation:markerPulse 2s ${i*.3}s ease-in-out infinite"></div>
+    </div>`;
+  }).join('');
+
+  const summaryHTML = analysis?.summary ? `
+    <div class="card" style="padding:16px">
+      <div class="diagnosis-label">Diagnóstico Geral</div>
+      <div class="diagnosis-text">${analysis.summary}</div>
+    </div>` : '';
+
+  const zonesHTML = concerns.length ? `
+    <div class="card" style="padding:16px">
+      <div class="diagnosis-label" style="margin-bottom:12px">Áreas Identificadas</div>
+      ${concerns.map(c=>{
+        const cfg = ISSUE_CONFIG[c.issue]||ISSUE_CONFIG.default;
+        return `<div class="zone-row">
+          <div class="zone-dot" style="background:${cfg.color}"></div>
+          <div><span class="zone-row-name">${c.zone_label||c.zone}</span><span class="zone-row-desc"> — ${c.description}</span></div>
+        </div>`;
+      }).join('')}
+    </div>` : '';
+
+  const recsHTML = analysis?.recommendations?.length ? `
+    <div class="rec-card">
+      <div class="rec-label">✨ Recomendações Específicas</div>
+      ${analysis.recommendations.map(r=>`<div class="rec-item"><span class="rec-bullet">•</span>${r}</div>`).join('')}
+    </div>` : '';
+
+  document.getElementById('faceAnalysisCard').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="face-photo-wrap">
+        <img src="${capturedDataURL}" alt="Foto analisada"/>
+        ${zoneMarkers}
+        ${issueKeys.length?`<div class="face-legend">${legendHTML}</div>`:''}
+      </div>
+      ${summaryHTML}${zonesHTML}${recsHTML}
+    </div>`;
+  // inject zoneIn keyframe once
+  if(!document.getElementById('zoneKF')){
+    const s=document.createElement('style');s.id='zoneKF';
+    s.textContent='@keyframes zoneIn{from{opacity:0;transform:translate(-50%,-50%) scale(0)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}';
+    document.head.appendChild(s);
+  }
+}
+
+function renderCareTips(){
+  const roman = selType.roman;
+  const sun = SUN_REACTIONS[roman];
+  const sunHTML = sun ? `
+    <div class="sun-banner">
+      <span style="font-size:24px;flex-shrink:0">🌞</span>
+      <div>
+        <div class="sun-banner-title">Sua pele e o sol — Tipo ${roman} (${selType.name})</div>
+        <div class="sun-banner-body">${sun}</div>
+      </div>
+    </div>` : '';
+
+  const tipsHTML = TIPS.map((tip,idx)=>{
+    const typeNote = tip.typeSpecific?.[roman];
+    const itemsHTML = tip.items.map(i=>`<div class="tip-item"><span class="tip-item-bullet">•</span><span>${i}</span></div>`).join('');
+    const benefitsHTML = tip.benefitsLabel && tip.benefits ? `
+      <div>
+        <div class="benefits-label">${tip.benefitsLabel}</div>
+        <div class="benefits-chips">${tip.benefits.map(b=>`<span class="benefits-chip">${b}</span>`).join('')}</div>
+      </div>` : '';
+    const noteHTML = typeNote?.note ? `
+      <div class="type-note">
+        <div class="type-note-title">Para o seu tipo de pele:</div>
+        <div class="type-note-body">${typeNote.note}</div>
+      </div>` : '';
+    return `
+      <div class="tip-card" id="tip${tip.id}" style="animation:fadeUp .4s ${idx*.06}s ease both;opacity:0">
+        <button class="tip-btn" onclick="toggleTip(${tip.id})">
+          <span class="tip-emoji">${tip.emoji}</span>
+          <div class="tip-btn-text">
+            <div class="tip-btn-title">${tip.title}</div>
+            ${typeNote?.badge?`<span class="tip-btn-badge">${typeNote.badge}</span>`:''}
+          </div>
+          <div class="tip-chevron"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+        </button>
+        <div class="tip-body">
+          <div class="tip-body-inner">
+            <div class="tip-items">${itemsHTML}</div>
+            ${benefitsHTML}${noteHTML}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('skinCareTips').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:0">
+      <h2 class="section-title" style="margin-bottom:16px">Cuidados com a Pele</h2>
+      ${sunHTML}
+      <div class="tips-list">${tipsHTML}</div>
+    </div>`;
+}
+
+function toggleTip(id){
+  const card = document.getElementById('tip'+id);
+  card.classList.toggle('open');
+}
+
+function renderRoutine(){
+  const stepsHTML = (arr)=> arr.map(item=>`
+    <div class="routine-step">
+      <div class="routine-step-icon">${item.emoji}</div>
+      <div class="routine-step-body">
+        <div class="routine-step-action">${item.action}</div>
+        <div class="routine-step-detail">${item.detail}</div>
+      </div>
+      <span class="routine-step-num">${item.step}</span>
+    </div>`).join('');
+
+  document.getElementById('dailyRoutine').innerHTML = `
+    <div>
+      <h2 class="section-title" style="margin-bottom:16px">Rotina Diária</h2>
+      <div class="routine-photo">
+        <img src="https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=900&auto=format&fit=crop&q=80" alt="Produtos de skincare"/>
+        <div class="routine-photo-overlay"><p>Uma boa rotina transforma a saúde da sua pele ✨</p></div>
+      </div>
+      <div class="routine-cols">
+        <div class="routine-col">
+          <div class="routine-col-head">
+            <div class="routine-col-icon morning">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            </div>
+            <span class="routine-col-label">Rotina da Manhã</span>
+          </div>
+          <div class="routine-steps">${stepsHTML(MORNING)}</div>
+        </div>
+        <div class="routine-col">
+          <div class="routine-col-head">
+            <div class="routine-col-icon night">
+              <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </div>
+            <span class="routine-col-label">Rotina da Noite</span>
+          </div>
+          <div class="routine-steps">${stepsHTML(EVENING)}</div>
+        </div>
+      </div>
+      <p class="routine-tip">💡 Consistência é a chave. Resultados visíveis aparecem após 4–8 semanas de rotina regular.</p>
+    </div>`;
+}
+
+/* ═══════════════════════════════════════════════════
+   RESTART
+═══════════════════════════════════════════════════ */
+function restartAll(){
+  stopCamera();
+  selType=null;capturedBlob=null;capturedDataURL=null;analysis=null;
+  goStep('select');
+  window.scrollTo(0,0);
+}
+
+/* ═══════════════════════════════════════════════════
+   UTILS
+═══════════════════════════════════════════════════ */
+const delay = ms => new Promise(r=>setTimeout(r,ms));
+
+/* ═══════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════ */
+renderSkinList();
+// hide all steps except select
+['camera','analyzing','results'].forEach(s=>document.getElementById('step-'+s).style.display='none');
+</script>
+</body>
+</html>
