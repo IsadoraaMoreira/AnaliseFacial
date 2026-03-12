@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>Análise Facial — CEUNSP</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --background:    hsl(30,20%,98%);
+  --foreground:    hsl(20,20%,10%);
+  --card:          hsl(30,20%,99%);
+  --primary:       hsl(350,30%,45%);
+  --primary-fg:    hsl(0,0%,100%);
+  --secondary:     hsl(30,15%,93%);
+  --muted:         hsl(30,10%,94%);
+  --muted-fg:      hsl(20,10%,45%);
+  --border:        hsl(30,15%,90%);
+  --radius:        0.75rem;
+  --skin-1: #FDEBD0; --skin-2: #F5CBA7; --skin-3: #E0B88A;
+  --skin-4: #C49A6C; --skin-5: #8D6E4C; --skin-6: #4A3728;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-tap-highlight-color:transparent}
+body{
+  font-family:'Inter',sans-serif;font-size:14px;
+  background:var(--background);color:var(--foreground);
+  min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;
+}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+
+/* HEADER */
+header{
+  position:fixed;top:0;left:0;right:0;z-index:40;
+  background:hsla(30,20%,98%,.95);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);height:56px;
+}
+.header-inner{
+  max-width:512px;margin:0 auto;padding:0 20px;
+  height:100%;display:flex;align-items:center;justify-content:space-between;
+}
+.logo-link{display:flex;align-items:center;gap:10px}
+.logo-box{
+  width:32px;height:32px;border-radius:8px;
+  background:var(--primary);display:flex;align-items:center;justify-content:center;
+}
+.logo-box span{color:#fff;font-size:11px;font-weight:700}
+.logo-label{font-family:'Playfair Display',serif;font-weight:600;font-size:16px}
+
+/* MAIN */
+main{padding-top:56px;min-height:100vh}
+.page-inner{max-width:512px;margin:0 auto;padding:40px 20px 60px}
+
+/* HERO */
+.hero{text-align:center;padding:48px 0 40px;animation:fadeDown .5s ease both}
+.badge-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 16px;border-radius:9999px;
+  background:hsl(350,30%,45%,.1);color:var(--primary);
+  font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;
+}
+.hero h1{
+  font-family:'Playfair Display',serif;font-size:38px;font-weight:700;
+  color:var(--foreground);line-height:1.15;margin-top:20px;
+}
+.hero p{
+  margin-top:14px;font-size:15px;color:var(--muted-fg);
+  max-width:340px;margin-left:auto;margin-right:auto;line-height:1.65;
+}
+.hero-cta{
+  display:inline-flex;align-items:center;gap:8px;
+  margin-top:28px;padding:14px 28px;
+  background:var(--primary);color:#fff;border-radius:var(--radius);
+  font-size:15px;font-weight:600;
+  box-shadow:0 8px 24px hsl(350,30%,45%,.3);
+  transition:all .2s;
+}
+.hero-cta:hover{background:hsl(350,30%,40%);transform:translateY(-2px);box-shadow:0 12px 32px hsl(350,30%,45%,.35)}
+.hero-cta:active{transform:scale(.97)}
+.hero-cta svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* SKIN PALETTE */
+.palette{display:flex;justify-content:center;gap:8px;margin-top:32px}
+.palette-dot{
+  width:32px;height:32px;border-radius:50%;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
+  animation:popIn .4s ease both;
+}
+.palette-dot:nth-child(1){background:var(--skin-1);animation-delay:.05s}
+.palette-dot:nth-child(2){background:var(--skin-2);animation-delay:.10s}
+.palette-dot:nth-child(3){background:var(--skin-3);animation-delay:.15s}
+.palette-dot:nth-child(4){background:var(--skin-4);animation-delay:.20s}
+.palette-dot:nth-child(5){background:var(--skin-5);animation-delay:.25s}
+.palette-dot:nth-child(6){background:var(--skin-6);animation-delay:.30s}
+
+/* DIVIDER */
+.divider{height:1px;background:var(--border);margin:40px 0}
+
+/* FEATURES */
+.features-title{
+  font-family:'Playfair Display',serif;font-size:22px;font-weight:600;
+  text-align:center;margin-bottom:24px;
+}
+.features-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:380px){.features-grid{grid-template-columns:1fr}}
+.feature-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:18px;
+  animation:fadeUp .4s ease both;
+}
+.feature-card:nth-child(1){animation-delay:.0s}
+.feature-card:nth-child(2){animation-delay:.07s}
+.feature-card:nth-child(3){animation-delay:.14s}
+.feature-card:nth-child(4){animation-delay:.21s}
+.feature-icon{
+  width:36px;height:36px;border-radius:10px;
+  background:hsl(350,30%,45%,.1);
+  display:flex;align-items:center;justify-content:center;margin-bottom:10px;
+}
+.feature-icon svg{width:16px;height:16px;stroke:var(--primary);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.feature-title{font-size:13px;font-weight:600;color:var(--foreground);margin-bottom:4px}
+.feature-desc{font-size:12px;color:var(--muted-fg);line-height:1.55}
+
+/* HERO IMAGE */
+.hero-img{
+  position:relative;border-radius:16px;overflow:hidden;height:192px;
+  margin:32px 0;animation:fadeUp .4s .15s ease both;opacity:0;
+}
+.hero-img img{width:100%;height:100%;object-fit:cover}
+.hero-img-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(0,0,0,.6) 0%,transparent 60%);
+  display:flex;align-items:flex-end;padding:20px;
+}
+.hero-img-overlay p{color:#fff;font-size:13px;font-weight:500}
+
+/* CTA SECONDARY */
+.cta-box{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:16px;padding:28px;text-align:center;margin-top:8px;
+  animation:fadeUp .4s .3s ease both;opacity:0;
+}
+.cta-box h2{font-family:'Playfair Display',serif;font-size:20px;font-weight:600;margin-bottom:8px}
+.cta-box p{font-size:13px;color:var(--muted-fg);line-height:1.6;margin-bottom:20px}
+.btn-primary-full{
+  width:100%;background:var(--primary);color:#fff;
+  border:none;padding:13px;border-radius:var(--radius);
+  font-size:14px;font-weight:600;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:all .15s;font-family:'Inter',sans-serif;
+}
+.btn-primary-full:hover{background:hsl(350,30%,40%)}
+.btn-primary-full:active{transform:scale(.98)}
+.btn-primary-full svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* FOOTER */
+footer{
+  border-top:1px solid var(--border);
+  padding:20px;text-align:center;font-size:12px;color:var(--muted-fg);line-height:1.7;
+}
+
+/* ANIMATIONS */
+@keyframes fadeUp  {from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn   {from{opacity:0;transform:scale(.5)}to{opacity:1;transform:scale(1)}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a class="logo-link" href="index.html">
+      <div class="logo-box"><span>AF</span></div>
+      <span class="logo-label">Análise Facial</span>
+    </a>
+    <a href="analise-facial.html" style="font-size:13px;font-weight:500;color:var(--primary)">Iniciar análise →</a>
+  </div>
+</header>
+
+<main>
+  <div class="page-inner">
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="badge-pill">✨ Escala de Fitzpatrick · IA</div>
+      <h1>Conheça a sua<br/>pele de verdade</h1>
+      <p>Identifique seu fototipo, analise a condição do seu rosto e receba uma rotina personalizada em segundos.</p>
+      <a class="hero-cta" href="analise-facial.html">
+        <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Começar análise grátis
+      </a>
+      <div class="palette">
+        <div class="palette-dot"></div>
+        <div class="palette-dot"></div>
+        <div class="palette-dot"></div>
+        <div class="palette-dot"></div>
+        <div class="palette-dot"></div>
+        <div class="palette-dot"></div>
+      </div>
+    </div>
+
+    <!-- HERO IMAGE -->
+    <div class="hero-img">
+      <img src="https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=900&auto=format&fit=crop&q=80" alt="Skincare"/>
+      <div class="hero-img-overlay"><p>Biomedicina Estética · CEUNSP · 2025</p></div>
+    </div>
+
+    <!-- FEATURES -->
+    <div class="features-title">O que você vai descobrir</div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div class="feature-title">Fototipo de Pele</div>
+        <div class="feature-desc">Classificação precisa pelos 6 tipos da Escala de Fitzpatrick</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </div>
+        <div class="feature-title">Análise com IA</div>
+        <div class="feature-desc">Câmera do dispositivo + inteligência artificial para diagnóstico facial</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div class="feature-title">Cuidados Específicos</div>
+        <div class="feature-desc">Dicas personalizadas de proteção solar e hidratação para seu tipo</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <div class="feature-title">Rotina Diária</div>
+        <div class="feature-desc">Passos de skincare para manhã e noite adaptados ao seu fototipo</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- CTA BOX -->
+    <div class="cta-box">
+      <h2>Pronta para começar?</h2>
+      <p>A análise leva menos de 1 minuto. Tire uma selfie e deixe a IA cuidar do resto.</p>
+      <a href="analise-facial.html">
+        <button class="btn-primary-full">
+          <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          Ir para a análise facial
+        </button>
+      </a>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  Biomedicina Estética · CEUNSP · 2025<br/>
+  Este projeto tem fins educacionais e não substitui consulta médica ou dermatológica.
+</footer>
+
+</body>
+</html>
