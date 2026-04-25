@@ -4,25 +4,26 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 <title>Análise Facial</title>
+<link rel="icon" type="image/png" href="./image Biomed Skin  sem fundo.png"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
 /* ═══════════════════════════════════════════════════
    CSS VARIABLES — exatas do index.css original
 ═══════════════════════════════════════════════════ */
 :root {
-  --background:    hsl(30,20%,98%);
-  --foreground:    hsl(20,20%,10%);
-  --card:          hsl(30,20%,99%);
-  --card-fg:       hsl(20,20%,10%);
-  --primary:       hsl(350,30%,45%);
+  --background:    hsl(80,20%,97%);
+  --foreground:    hsl(100,15%,12%);
+  --card:          hsl(80,20%,99%);
+  --card-fg:       hsl(100,15%,12%);
+  --primary:       #879676;
   --primary-fg:    hsl(0,0%,100%);
-  --secondary:     hsl(30,15%,93%);
-  --secondary-fg:  hsl(20,20%,15%);
-  --muted:         hsl(30,10%,94%);
-  --muted-fg:      hsl(20,10%,45%);
-  --accent:        hsl(20,25%,90%);
-  --accent-fg:     hsl(20,20%,15%);
-  --border:        hsl(30,15%,90%);
+  --secondary:     hsl(80,15%,93%);
+  --secondary-fg:  hsl(100,15%,15%);
+  --muted:         #f0f3eb;
+  --muted-fg:      hsl(100,8%,45%);
+  --accent:        #e8eee0;
+  --accent-fg:     hsl(100,15%,15%);
+  --border:        #d5ddc8;
   --radius:        0.75rem;
   /* skin tones — do tailwind.config */
   --skin-1: #FDEBD0;
@@ -52,7 +53,7 @@ img{display:block;max-width:100%}
 ═══════════════════════════════════════════════════ */
 header{
   position:fixed;top:0;left:0;right:0;z-index:40;
-  background:hsla(30,20%,98%,.95);
+  background:hsla(80,20%,97%,.95);
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
   border-bottom:1px solid var(--border);height:56px;
 }
@@ -62,8 +63,8 @@ header{
 }
 .logo-link{display:flex;align-items:center;gap:10px}
 .logo-box{
-  width:32px;height:32px;border-radius:8px;
-  background:var(--primary);display:flex;align-items:center;justify-content:center;
+  width:36px;height:36px;border-radius:8px;
+  background:transparent;display:flex;align-items:center;justify-content:center;
   flex-shrink:0;overflow:hidden;
 }
 .logo-box span{color:#fff;font-size:11px;font-weight:700}
@@ -134,7 +135,7 @@ header{
 .badge-pill{
   display:inline-flex;align-items:center;gap:6px;
   padding:6px 16px;border-radius:9999px;
-  background:hsl(350,30%,45%,.1);color:var(--primary);
+  background:rgba(163,198,140,.2);color:#5a6e49;
   font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;
 }
 .card{
@@ -151,7 +152,7 @@ header{
   border:none;padding:12px;border-radius:var(--radius);
   font-size:14px;font-weight:500;transition:all .15s;
 }
-.btn-primary-full:hover{background:hsl(350,30%,40%)}
+.btn-primary-full:hover{background:#6e7d60}
 .btn-primary-full:active{transform:scale(.98)}
 .btn-outline{
   width:100%;background:transparent;color:var(--foreground);
@@ -183,18 +184,18 @@ header{
 .skin-card{
   position:relative;width:100%;text-align:left;
   border-radius:16px;border:2px solid transparent;
-  background:hsl(30,20%,99%,.6);
+  background:hsl(80,20%,99%,.6);
   padding:20px;transition:all .25s;cursor:pointer;
   display:flex;align-items:flex-start;gap:16px;
 }
 .skin-card:hover{
   background:var(--card);border-color:var(--border);
-  box-shadow:0 8px 24px hsl(350,30%,45%,.07);
+  box-shadow:0 8px 24px rgba(135,150,118,.07);
   transform:translateY(-3px);
 }
 .skin-card.selected{
   border-color:var(--primary);background:var(--card);
-  box-shadow:0 12px 32px hsl(350,30%,45%,.12);
+  box-shadow:0 12px 32px rgba(135,150,118,.12);
 }
 .skin-card-swatch{
   width:56px;height:56px;border-radius:12px;flex-shrink:0;
@@ -268,7 +269,7 @@ header{
 /* scan line */
 .scan-line{
   position:absolute;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,transparent,hsl(350,30%,45%,.6),transparent);
+  background:linear-gradient(90deg,transparent,rgba(135,150,118,.6),transparent);
   animation:scanMove 3s linear infinite;
   pointer-events:none;
 }
@@ -291,10 +292,10 @@ header{
   width:64px;height:64px;border-radius:50%;
   background:var(--primary);
   display:flex;align-items:center;justify-content:center;
-  box-shadow:0 4px 20px hsl(350,30%,45%,.4);
+  box-shadow:0 4px 20px rgba(135,150,118,.4);
   transition:all .15s;flex-shrink:0;
 }
-.cam-shutter:hover{background:hsl(350,30%,40%)}
+.cam-shutter:hover{background:#6e7d60}
 .cam-shutter:active{transform:scale(.93)}
 .cam-shutter:disabled{opacity:.4;pointer-events:none}
 .cam-shutter svg{width:24px;height:24px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -316,7 +317,7 @@ header{
   display:flex;align-items:center;justify-content:center;gap:8px;
   transition:background .15s;
 }
-.cam-confirm-btn:hover{background:hsl(350,30%,40%)}
+.cam-confirm-btn:hover{background:#6e7d60}
 .cam-confirm-btn svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 /* error state */
 .cam-error{text-align:center;padding:40px 0}
@@ -341,7 +342,7 @@ header{
 }
 .spinner-ring{
   width:80px;height:80px;border-radius:50%;
-  border:4px solid hsl(350,30%,45%,.2);
+  border:4px solid rgba(135,150,118,.2);
   position:absolute;top:0;left:0;
 }
 .spinner-arc{
@@ -407,7 +408,7 @@ header{
 .zone-row-name{font-size:14px;font-weight:500;color:var(--foreground)}
 .zone-row-desc{font-size:14px;color:var(--muted-fg)}
 /* recommendations */
-.rec-card{background:hsl(350,30%,45%,.05);border:1px solid hsl(350,30%,45%,.2);border-radius:var(--radius);padding:16px}
+.rec-card{background:hsl(350,30%,45%,.05);border:1px solid rgba(135,150,118,.2);border-radius:var(--radius);padding:16px}
 .rec-label{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--primary);margin-bottom:12px}
 .rec-item{display:flex;align-items:flex-start;gap:8px;font-size:14px;color:var(--foreground);margin-bottom:8px;line-height:1.5}
 .rec-item:last-child{margin-bottom:0}
@@ -458,7 +459,7 @@ header{
 .tip-item-bullet{color:var(--primary);font-weight:700;flex-shrink:0;margin-top:1px}
 .benefits-label{font-size:12px;font-weight:600;color:var(--foreground);margin-bottom:8px}
 .benefits-chips{display:flex;flex-wrap:wrap;gap:6px}
-.benefits-chip{font-size:12px;background:hsl(350,30%,45%,.1);color:var(--primary);border-radius:9999px;padding:4px 10px;font-weight:500}
+.benefits-chip{font-size:12px;background:rgba(163,198,140,.2);color:#5a6e49;border-radius:9999px;padding:4px 10px;font-weight:500}
 .type-note{background:hsl(350,30%,45%,.05);border:1px solid hsl(350,30%,45%,.15);border-radius:8px;padding:12px}
 .type-note-title{font-size:12px;font-weight:600;color:var(--primary);margin-bottom:4px}
 .type-note-body{font-size:12px;color:var(--foreground);line-height:1.6}
@@ -525,12 +526,12 @@ header{
   display:flex;align-items:center;justify-content:center;
   font-weight:700;font-size:13px;flex-shrink:0;
 }
-.av0{background:hsl(350,70%,90%);color:hsl(350,60%,40%)}
-.av1{background:hsl(270,60%,90%);color:hsl(270,50%,40%)}
-.av2{background:hsl(45,80%,88%);color:hsl(40,60%,35%)}
-.av3{background:hsl(145,50%,88%);color:hsl(145,45%,30%)}
-.av4{background:hsl(200,70%,88%);color:hsl(200,55%,35%)}
-.av5{background:hsl(330,65%,90%);color:hsl(330,55%,40%)}
+.av0{background:#dde8d5;color:#4a5e3a}
+.av1{background:#c5d9b8;color:#3d5c2e}
+.av2{background:#b8ceaa;color:#2d4d20}
+.av3{background:#879676;color:#fff}
+.av4{background:#a3c68c;color:#2d4d20}
+.av5{background:#e8eed8;color:#4a5e3a}
 .member-info{flex:1;min-width:0}
 .member-name{font-size:14px;font-weight:600;color:var(--foreground)}
 .member-email{
@@ -540,6 +541,7 @@ header{
 .member-email svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 .member-email a{color:var(--muted-fg);transition:color .15s;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .member-email a:hover{color:var(--primary)}
+.member-rgm{font-size:11px;color:var(--muted-fg);margin-top:3px;font-weight:500;letter-spacing:.04em}
 .inst-card{
   background:var(--card);border:1px solid var(--border);
   border-radius:16px;padding:24px;text-align:center;margin-top:40px;
@@ -550,11 +552,15 @@ header{
 .inst-sub{font-size:13px;color:var(--muted-fg);margin-top:4px}
 .member-card{animation:fadeUp .4s ease both}
 .member-card:nth-child(1){animation-delay:.0s}
-.member-card:nth-child(2){animation-delay:.08s}
-.member-card:nth-child(3){animation-delay:.16s}
-.member-card:nth-child(4){animation-delay:.24s}
-.member-card:nth-child(5){animation-delay:.32s}
-.member-card:nth-child(6){animation-delay:.40s}
+.member-card:nth-child(2){animation-delay:.07s}
+.member-card:nth-child(3){animation-delay:.14s}
+.member-card:nth-child(4){animation-delay:.21s}
+.member-card:nth-child(5){animation-delay:.28s}
+.member-card:nth-child(6){animation-delay:.35s}
+.member-card:nth-child(7){animation-delay:.42s}
+.member-card:nth-child(8){animation-delay:.49s}
+.member-card:nth-child(9){animation-delay:.56s}
+.member-card:nth-child(10){animation-delay:.63s}
 
 /* ═══════════════════════════════════════════════════
    PAGE ABOUT
@@ -582,13 +588,13 @@ header{
 .about-section-head{display:flex;align-items:center;gap:12px;margin-bottom:12px}
 .about-section-icon{
   width:36px;height:36px;border-radius:10px;
-  background:hsl(350,30%,45%,.1);
+  background:rgba(163,198,140,.2);
   display:flex;align-items:center;justify-content:center;flex-shrink:0;
 }
 .about-section-icon svg{width:16px;height:16px;stroke:var(--primary);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .about-section-title{font-size:14px;font-weight:600;color:var(--foreground);line-height:1.3}
 .about-section-body{font-size:13px;color:var(--muted-fg);line-height:1.7}
-.tech-box{background:hsl(30,10%,94%,.5);border-radius:16px;padding:20px;margin-top:32px;animation:fadeUp .4s .7s ease both}
+.tech-box{background:rgba(163,198,140,.15);border-radius:16px;padding:20px;margin-top:32px;animation:fadeUp .4s .7s ease both}
 .tech-label{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted-fg);margin-bottom:12px}
 .tech-chips{display:flex;flex-wrap:wrap;gap:8px}
 .tech-chip{
@@ -614,7 +620,7 @@ header{
 <header>
   <div class="header-inner">
     <a class="logo-link" href="#" onclick="goPage('home');return false">
-      <div class="logo-box" id="logoBox"><span>AF</span></div>
+      <div class="logo-box" id="logoBox"><img src="./vetor logo biomedskin.png" alt="BiomedSkin Logo" style="width:100%;height:100%;object-fit:contain;border-radius:8px;background:transparent"/></div>
       <span class="logo-label">Análise Facial</span>
     </a>
     <button class="menu-btn" onclick="openDrawer()" aria-label="Menu">
@@ -773,12 +779,16 @@ header{
       <p>Estudantes de Biomedicina do CEUNSP responsáveis pelo desenvolvimento deste projeto.</p>
     </div>
     <div class="member-list">
-      <div class="member-card"><div class="member-avatar av0">IM</div><div class="member-info"><div class="member-name">Isadora Moreira</div><div class="member-email"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:isadora.moreira@cs.ceunsp.edu.br">isadora.moreira@cs.ceunsp.edu.br</a></div></div></div>
-      <div class="member-card"><div class="member-avatar av1">GS</div><div class="member-info"><div class="member-name">Gabriella Santos</div><div class="member-email"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:gabriella.santos@cs.ceunsp.edu.br">gabriella.santos@cs.ceunsp.edu.br</a></div></div></div>
-      <div class="member-card"><div class="member-avatar av2">AC</div><div class="member-info"><div class="member-name">Anelise Coleone</div><div class="member-email"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:anelise.coleone@cs.ceunsp.edu.br">anelise.coleone@cs.ceunsp.edu.br</a></div></div></div>
-      <div class="member-card"><div class="member-avatar av3">MC</div><div class="member-info"><div class="member-name">Maria Clara</div><div class="member-email"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:maria.callegaro@cs.ceunsp.edu.br">maria.callegaro@cs.ceunsp.edu.br</a></div></div></div>
-      <div class="member-card"><div class="member-avatar av4">EO</div><div class="member-info"><div class="member-name">Evellyn Oliveira</div><div class="member-email"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:evellyn.oliveira@cs.ceunsp.edu.br">evellyn.oliveira@cs.ceunsp.edu.br</a></div></div></div>
-      <div class="member-card"><div class="member-avatar av5">NC</div><div class="member-info"><div class="member-name">Natasha Coelho</div><div class="member-email"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:natasha.coelho@cs.ceunsp.edu.br">natasha.coelho@cs.ceunsp.edu.br</a></div></div></div>
+      <div class="member-card"><div class="member-avatar av0">IM</div><div class="member-info"><div class="member-name">Isadora Moreira</div><div class="member-email"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:isadora.moreira@cs.ceunsp.edu.br">isadora.moreira@cs.ceunsp.edu.br</a></div><div class="member-rgm">RGM: 1234567</div></div></div>
+      <div class="member-card"><div class="member-avatar av1">GS</div><div class="member-info"><div class="member-name">Gabriella Santos</div><div class="member-email"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:gabriella.santos@cs.ceunsp.edu.br">gabriella.santos@cs.ceunsp.edu.br</a></div><div class="member-rgm">RGM: 1234568</div></div></div>
+      <div class="member-card"><div class="member-avatar av2">AC</div><div class="member-info"><div class="member-name">Anelise Coleone</div><div class="member-email"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:anelise.coleone@cs.ceunsp.edu.br">anelise.coleone@cs.ceunsp.edu.br</a></div><div class="member-rgm">RGM: 1234569</div></div></div>
+      <div class="member-card"><div class="member-avatar av3">MC</div><div class="member-info"><div class="member-name">Maria Clara</div><div class="member-email"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:maria.callegaro@cs.ceunsp.edu.br">maria.callegaro@cs.ceunsp.edu.br</a></div><div class="member-rgm">RGM: 1234570</div></div></div>
+      <div class="member-card"><div class="member-avatar av4">EO</div><div class="member-info"><div class="member-name">Evellyn Oliveira</div><div class="member-email"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:evellyn.oliveira@cs.ceunsp.edu.br">evellyn.oliveira@cs.ceunsp.edu.br</a></div><div class="member-rgm">RGM: 1234571</div></div></div>
+      <div class="member-card"><div class="member-avatar av5">NC</div><div class="member-info"><div class="member-name">Natasha Coelho</div><div class="member-email"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:natasha.coelho@cs.ceunsp.edu.br">natasha.coelho@cs.ceunsp.edu.br</a></div><div class="member-rgm">RGM: 1234572</div></div></div>
+      <div class="member-card"><div class="member-avatar av0">LF</div><div class="member-info"><div class="member-name">Letícia Fernandes</div><div class="member-email"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:leticia.fernandes@cs.ceunsp.edu.br">leticia.fernandes@cs.ceunsp.edu.br</a></div><div class="member-rgm">RGM: 1234573</div></div></div>
+      <div class="member-card"><div class="member-avatar av1">BA</div><div class="member-info"><div class="member-name">Bruna Almeida</div><div class="member-email"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:bruna.almeida@cs.ceunsp.edu.br">bruna.almeida@cs.ceunsp.edu.br</a></div><div class="member-rgm">RGM: 1234574</div></div></div>
+      <div class="member-card"><div class="member-avatar av2">CR</div><div class="member-info"><div class="member-name">Camila Rodrigues</div><div class="member-email"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:camila.rodrigues@cs.ceunsp.edu.br">camila.rodrigues@cs.ceunsp.edu.br</a></div><div class="member-rgm">RGM: 1234575</div></div></div>
+      <div class="member-card"><div class="member-avatar av3">JP</div><div class="member-info"><div class="member-name">Juliana Pereira</div><div class="member-email"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:juliana.pereira@cs.ceunsp.edu.br">juliana.pereira@cs.ceunsp.edu.br</a></div><div class="member-rgm">RGM: 1234576</div></div></div>
     </div>
     <div class="inst-card">
       <div class="inst-label">Instituição</div>
@@ -792,6 +802,7 @@ header{
 <div class="page" id="page-about">
   <div class="page-inner">
     <div class="about-header">
+      <img src="./image Biomed Skin  sem fundo.png" alt="BiomedSkin Logo" style="display: block; margin: 0 auto 0px; width: 159px; height: auto; object-fit: contain;"/>
       <div class="badge-pill">
         <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>
         Sobre o Projeto
